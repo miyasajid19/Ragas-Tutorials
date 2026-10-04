@@ -1,6 +1,6 @@
 from openai import AsyncOpenAI
 from ragas.llms import llm_factory
-from ragas.metrics.collections import ContextPrecision
+from ragas.metrics.collections import ContextUtilization
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -27,13 +27,13 @@ llm = llm_factory(
 )
 
 # Metric
-scorer = ContextPrecision(llm=llm)
-
+scorer = ContextUtilization(llm=llm)
+# The ContextUtilization metric evaluates whether retrieved contexts are useful by comparing each context against the generated response. Use this when you don't have a reference answer but have the response that was generated.
 
 async def main():
     result = await scorer.ascore(
         user_input="Where is the Eiffel Tower located?",
-        reference="The Eiffel Tower is located in Paris.",
+        response="The Eiffel Tower is located in Paris.",
         retrieved_contexts=[
             "The Eiffel Tower is located in Paris.",
             "The Brandenburg Gate is located in Berlin.",
@@ -42,6 +42,14 @@ async def main():
 
     print(f"Context Precision Score: {result.value}")
 
-
+another_result = scorer.score(
+    user_input="What is the capital of France?",
+    response="The capital of France is Paris.",
+    retrieved_contexts=[
+        "The capital of Germany is Berlin.",
+        "The capital of France is Paris.",
+    ],
+)
+print(f"Context Precision Score (sync): {another_result.value}")
 if __name__ == "__main__":
     asyncio.run(main())
