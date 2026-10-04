@@ -82,7 +82,7 @@ async def main():
 
     sample = MultiTurnSample(
         user_input=user_input,
-        reference_topics=["science"],
+        reference_topics=["religon"],
     )
 
     scorer = TopicAdherenceScore(llm=evaluator_llm, mode="precision")
