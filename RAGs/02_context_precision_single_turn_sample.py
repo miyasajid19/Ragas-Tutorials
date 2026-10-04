@@ -1,0 +1,40 @@
+from openai import AsyncOpenAI
+from ragas.llms import llm_factory
+from ragas import SingleTurnSample
+from ragas.metrics import LLMContextPrecisionWithoutReference
+from dotenv import load_dotenv
+import os
+import asyncio
+
+load_dotenv()
+
+MINIMAX_API_KEY = os.getenv("MINIMAX_API_KEY")
+MINIMAX_API_BASE_URL = os.getenv("MINIMAX_BASE_URL")
+MINIMAX_MODEL = os.getenv("MINIMAX_MODEL")
+
+if not all([MINIMAX_API_KEY, MINIMAX_API_BASE_URL, MINIMAX_MODEL]):
+    raise ValueError("Missing MiniMax environment variables")
+
+# MiniMax OpenAI-compatible client
+client = AsyncOpenAI(
+    api_key=MINIMAX_API_KEY,
+    base_url=MINIMAX_API_BASE_URL,
+)
+
+# RAGAS LLM
+llm = llm_factory(
+    MINIMAX_MODEL,
+    client=client,
+)
+context_precision = LLMContextPrecisionWithoutReference(llm=llm)
+
+sample = SingleTurnSample(
+    user_input="Where is the Eiffel Tower located?",
+    response="The Eiffel Tower is located in Paris.",
+    retrieved_contexts=["The Eiffel Tower is located in Paris."],
+)
+
+result = context_precision.single_turn_score(sample)
+print(f"Context Precision Score: {result.value}")
+
+# this doesn't work
